@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import { Template } from '../../components';
 import { SERVER_IP } from '../../private';
+import { connect } from 'react-redux';
+import { setEditOrder } from "../../redux/actions/orderActions";
 import './viewOrders.css';
+
+const mapActionsToProps = dispatch => ({
+    commenceSetEditOrder(order) {
+      dispatch(setEditOrder(order))
+    }
+  })
 
 class ViewOrders extends Component {
     state = {
@@ -18,6 +26,11 @@ class ViewOrders extends Component {
                     console.log('Error getting orders');
                 }
             });
+    }
+
+    setOrder(order) {
+        this.props.commenceSetEditOrder(order)
+        this.props.history.push("/order");
     }
 
     render() {
@@ -37,7 +50,7 @@ class ViewOrders extends Component {
                                     <p>Quantity: {order.quantity}</p>
                                  </div>
                                  <div className="col-md-4 view-order-right-col">
-                                     <button className="btn btn-success">Edit</button>
+                                     <button className="btn btn-success" onClick={() => this.setOrder(order)}>Edit</button>
                                      <button className="btn btn-danger">Delete</button>
                                  </div>
                             </div>
@@ -49,4 +62,4 @@ class ViewOrders extends Component {
     }
 }
 
-export default ViewOrders;
+export default connect(null, mapActionsToProps)(ViewOrders);

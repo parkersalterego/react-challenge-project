@@ -2,12 +2,19 @@ import React, { Component } from 'react';
 import { Template } from '../../components';
 import { connect } from 'react-redux';
 import { SERVER_IP } from '../../private';
+import { clearEditOrder, editOrder } from '../../redux/actions/orderActions';
 import './orderForm.css';
 
 const ADD_ORDER_URL = `${SERVER_IP}/api/add-order`
 
-const mapStateToProps = (state) => ({
+const mapActionsToProps = dispatch => ({
+    commenceClearEditOrder: () => dispatch(clearEditOrder()),
+    commenceEditOrder: (order) => dispatch(editOrder(order))
+})
+
+const mapStateToProps = state => ({
     auth: state.auth,
+    order: state.order
 })
 
 class OrderForm extends Component {
@@ -19,24 +26,48 @@ class OrderForm extends Component {
         }
     }
 
+    componentWillMount() {
+        const order = this.props.order;
+        if (order && order.order_item && order.quantity) this.setState({ quantity: order.quantity, order_item: order.order_item });
+    }
+
+    componentWillUnmount() {
+        if (this.props.order) {
+            this.props.commenceClearEditOrder();
+        }
+    }
+
     menuItemChosen(event) {
-        this.setState({ item: event.target.value });
+        this.setState({ order_item: event.target.value });
     }
 
     menuQuantityChosen(event) {
         this.setState({ quantity: event.target.value });
     }
 
-    submitOrder(event) {
+    onOrderButtonClick(event) {
         event.preventDefault();
+        const order = {
+            order_item: this.state.order_item,
+            quantity: this.state.quantity,
+            ordered_by: this.props.auth.email || 'Unknown!',
+        };
+        if (this.props.order) {
+            this.props.commenceEditOrder({ ...order, id: this.props.order._id }).then(result => {
+                result.success 
+                    ? this.props.history.push("view-orders")
+                    : console.error("Error: Unable to submit order");
+            })
+        } else {
+            this.submitOrder(order);
+        }
+    }
+
+    submitOrder(order) {
         if (this.state.order_item === "") return;
         fetch(ADD_ORDER_URL, {
             method: 'POST',
-            body: JSON.stringify({
-                order_item: this.state.order_item,
-                quantity: this.state.quantity,
-                ordered_by: this.props.auth.email || 'Unknown!',
-            }),
+            body: JSON.stringify(order),
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -51,7 +82,7 @@ class OrderForm extends Component {
             <Template>
                 <div className="form-wrapper">
                     <form>
-                        <label className="form-label">I'd like to order...</label><br />
+                        <label className="form-label">{ `I'd like to ${ this.props.order ? "change my order to" : "order" }...` }</label><br />
                         <select 
                             value={this.state.order_item} 
                             onChange={(event) => this.menuItemChosen(event)}
@@ -72,7 +103,11 @@ class OrderForm extends Component {
                             <option value="5">5</option>
                             <option value="6">6</option>
                         </select>
-                        <button type="button" className="order-btn" onClick={(event) => this.submitOrder(event)}>Order It!</button>
+                        <button
+                            type="button"
+                            className="order-btn"
+                            onClick={(event) => this.onOrderButtonClick(event)}
+                        >{ this.props.order ? "Edit Order" : "Order It!" }</button>
                     </form>
                 </div>
             </Template>
@@ -80,4 +115,4 @@ class OrderForm extends Component {
     }
 }
 
-export default connect(mapStateToProps, null)(OrderForm);
+export default connect(mapStateToProps, mapActionsToProps)(OrderForm);

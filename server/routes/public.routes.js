@@ -17,15 +17,6 @@ router.get('/current-orders', async (req, res) => {
   }
 });
 
-router.get('/current-orders/:_id', async (req, res) => {
-  try {
-    const order = await Order.findById(req.params._id);
-    res.status(200).json({ success: true, order });
-  } catch(error) {
-    res.status(500).json({ success: false, error });
-  }
-})
-
 router.post('/add-order', async (req, res) => {
   try {
     if (!req.body) {
