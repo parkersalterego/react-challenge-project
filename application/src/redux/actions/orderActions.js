@@ -13,3 +13,13 @@ export const editOrder = order => {
         .then(response => ({ success: response.success }))
     };
 }
+export const deleteOrder = id => {
+    return () => {
+        return fetch(`${SERVER_IP}/api/delete-order`, {
+            method: 'POST',
+            body: JSON.stringify({ id }),
+            headers: { 'Content-Type': 'application/json' }
+        }).then(response => response.json())
+        .then(response => ({ success: response.success }))
+    }
+}
