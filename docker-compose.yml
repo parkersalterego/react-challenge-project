@@ -12,7 +12,7 @@ services:
     volumes:
     - ./application:/home/node/application
     - home/node/application/node_modules
-
+      stdin_open: true
   server:
     build: './server'
     ports: 
