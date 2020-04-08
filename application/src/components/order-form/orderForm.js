@@ -21,6 +21,7 @@ class OrderForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            isEditOrder: false,
             order_item: "",
             quantity: "1"
         }
@@ -28,7 +29,9 @@ class OrderForm extends Component {
 
     componentWillMount() {
         const order = this.props.order;
-        if (order && order.order_item && order.quantity) this.setState({ quantity: order.quantity, order_item: order.order_item });
+        if (order && order.order_item && order.quantity) {
+            this.setState({ isEditOrder: true, quantity: this.props.order.quantity, order_item: this.props.order.order_item });
+        }
     }
 
     componentWillUnmount() {
@@ -52,7 +55,7 @@ class OrderForm extends Component {
             quantity: this.state.quantity,
             ordered_by: this.props.auth.email || 'Unknown!',
         };
-        if (this.props.order) {
+        if (this.state.isEditOrder) {
             this.props.commenceEditOrder({ ...order, id: this.props.order._id }).then(result => {
                 result.success 
                     ? this.props.history.push("view-orders")
@@ -82,7 +85,7 @@ class OrderForm extends Component {
             <Template>
                 <div className="form-wrapper">
                     <form>
-                        <label className="form-label">{ `I'd like to ${ this.props.order ? "change my order to" : "order" }...` }</label><br />
+                    <label className="form-label">{ `I'd like to ${ this.state.isEditOrder ? "change my order to" : "order" }...` }</label><br />
                         <select 
                             value={this.state.order_item} 
                             onChange={(event) => this.menuItemChosen(event)}
@@ -107,7 +110,7 @@ class OrderForm extends Component {
                             type="button"
                             className="order-btn"
                             onClick={(event) => this.onOrderButtonClick(event)}
-                        >{ this.props.order ? "Edit Order" : "Order It!" }</button>
+                            >{ this.state.isEditOrder ? "Edit Order" : "Order It!" }</button>
                     </form>
                 </div>
             </Template>
